@@ -3,7 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBank.Console", "SupportBank.Console\SupportBank.Console.csproj", "{DFB52F1F-7E68-497A-9A0E-9BCAB1915092}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBank.ConsoleApp", "SupportBank.ConsoleApp\SupportBank.ConsoleApp.csproj", "{DFB52F1F-7E68-497A-9A0E-9BCAB1915092}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B8F13E01-E4A2-4D40-AE77-C28D9B35D79F}"
+	ProjectSection(SolutionItems) = preProject
+		DodgyTransactions2015.csv = DodgyTransactions2015.csv
+		Transactions2012.xml = Transactions2012.xml
+		Transactions2013.json = Transactions2013.json
+		Transactions2014.csv = Transactions2014.csv
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

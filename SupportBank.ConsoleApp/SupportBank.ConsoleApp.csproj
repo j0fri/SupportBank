@@ -7,8 +7,8 @@
     <ProjectGuid>{DFB52F1F-7E68-497A-9A0E-9BCAB1915092}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SupportBank.Console</RootNamespace>
-    <AssemblyName>SupportBank.Console</AssemblyName>
+    <RootNamespace>SupportBank.ConsoleApp</RootNamespace>
+    <AssemblyName>SupportBank.ConsoleApp</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
