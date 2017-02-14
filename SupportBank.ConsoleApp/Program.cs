@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -30,7 +31,8 @@ namespace SupportBank.ConsoleApp
       logger.Info("SupportBank starting up");
 
       var transactions = ReadCSV(@"Transactions2014.csv")
-        .Union(ReadCSV(@"DodgyTransactions2015.csv"));
+        .Union(ReadCSV(@"DodgyTransactions2015.csv"))
+        .Union(ReadJson(@"Transactions2013.json"));
       var accounts = CreateAccountsFromTransactions(transactions);
 
       PrintWelcomeBanner();
@@ -100,12 +102,20 @@ namespace SupportBank.ConsoleApp
         yield return new Transaction
         {
           Date = date,
-          From = fields[1],
-          To = fields[2],
+          FromAccount = fields[1],
+          ToAccount = fields[2],
           Narrative = fields[3],
           Amount = amount
         };
       }
+    }
+
+    private static IEnumerable<Transaction> ReadJson(string filename)
+    {
+      logger.Info($"Loading transactions from file {filename}");
+
+      var contents = File.ReadAllText(filename);
+      return JsonConvert.DeserializeObject<List<Transaction>>(contents);
     }
 
     private static void ReportSkippedTransaction(string transaction, string reason)
@@ -120,8 +130,8 @@ namespace SupportBank.ConsoleApp
 
       foreach (var transaction in transactions)
       {
-        GetOrCreateAccount(accounts, transaction.From).OutgoingTransactions.Add(transaction);
-        GetOrCreateAccount(accounts, transaction.To).IncomingTransactions.Add(transaction);
+        GetOrCreateAccount(accounts, transaction.FromAccount).OutgoingTransactions.Add(transaction);
+        GetOrCreateAccount(accounts, transaction.ToAccount).IncomingTransactions.Add(transaction);
       }
 
       return accounts;
@@ -215,7 +225,7 @@ namespace SupportBank.ConsoleApp
         account.IncomingTransactions.Union(account.OutgoingTransactions).OrderBy(tx => tx.Date))
       {
         Console.WriteLine(
-          $"  {transaction.Date:d}: {transaction.From} paid {transaction.To} {transaction.Amount:C} for {transaction.Narrative}");
+          $"  {transaction.Date:d}: {transaction.FromAccount} paid {transaction.ToAccount} {transaction.Amount:C} for {transaction.Narrative}");
       }
 
       Console.WriteLine();
