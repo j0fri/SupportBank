@@ -67,10 +67,14 @@ namespace SupportBank.ConsoleApp
 
     private static IEnumerable<Transaction> ReadCSV(string filename)
     {
+      logger.Info($"Loading transactions from file {filename}");
+
       var lines = File.ReadAllLines(filename).Skip(1);
 
       foreach (var line in lines)
       {
+        logger.Debug($"Parsing transaction: {line}");
+
         var fields = line.Split(',');
 
         yield return new Transaction
@@ -104,6 +108,7 @@ namespace SupportBank.ConsoleApp
         return accounts[owner];
       }
 
+      logger.Debug($"Adding account for {owner}");
       var newAccount = new Account(owner);
       accounts[owner] = newAccount;
       return newAccount;
