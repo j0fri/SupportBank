@@ -21,7 +21,8 @@ namespace SupportBank.ConsoleApp
 
     static void Main()
     {
-      var transactions = ReadCSV(@"Transactions2014.csv");
+      var transactions = ReadCSV(@"Transactions2014.csv")
+        .Union(ReadCSV(@"DodgyTransactions2015.csv"));
       var accounts = CreateAccountsFromTransactions(transactions);
 
       PrintWelcomeBanner();
