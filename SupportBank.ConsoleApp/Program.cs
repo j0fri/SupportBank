@@ -77,15 +77,41 @@ namespace SupportBank.ConsoleApp
 
         var fields = line.Split(',');
 
+        if (fields.Length != 5)
+        {
+          ReportSkippedTransaction(line, "Wrong number of fields");
+          continue;
+        }
+
+        DateTime date;
+        if (!DateTime.TryParse(fields[0], out date))
+        {
+          ReportSkippedTransaction(line, "Invalid date");
+          continue;
+        }
+
+        decimal amount;
+        if (!decimal.TryParse(fields[4], out amount))
+        {
+          ReportSkippedTransaction(line, "Invalid transaction amount");
+          continue;
+        }
+
         yield return new Transaction
         {
-          Date = DateTime.Parse(fields[0]),
+          Date = date,
           From = fields[1],
           To = fields[2],
           Narrative = fields[3],
-          Amount = decimal.Parse(fields[4])
+          Amount = amount
         };
       }
+    }
+
+    private static void ReportSkippedTransaction(string transaction, string reason)
+    {
+      logger.Error($"Unable to process transaction because {reason}: {transaction}");
+      Console.Error.WriteLine($"Skipping invalid transaction: {transaction}");
     }
 
     private static Dictionary<string, Account> CreateAccountsFromTransactions(IEnumerable<Transaction> transactions)
