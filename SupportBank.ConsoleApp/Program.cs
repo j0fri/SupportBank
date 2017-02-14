@@ -9,16 +9,31 @@ namespace SupportBank.ConsoleApp
   {
     static void Main()
     {
-      var parsedData = ReadCSV(@"Transactions2014.csv");
+      var transactions = ReadCSV(@"Transactions2014.csv");
+      var accounts = CreateAccountsFromTransactions(transactions);
 
-      foreach (var transaction in parsedData)
+      foreach (var account in accounts)
       {
-        Console.WriteLine($"{transaction.Date:d}: {transaction.From} paid {transaction.To} {transaction.Amount:C} for {transaction.Narrative}");
+        Console.WriteLine($"Account {account.Owner}");
+        Console.WriteLine("  Incoming transactions:");
+
+        foreach (var transaction in account.IncomingTransactions)
+        {
+          Console.WriteLine(
+            $"    {transaction.Date:d}: {transaction.From} paid {transaction.To} {transaction.Amount:C} for {transaction.Narrative}");
+        }
+
+        Console.WriteLine("  Outgoing transactions:");
+
+        foreach (var transaction in account.OutgoingTransactions)
+        {
+          Console.WriteLine(
+            $"    {transaction.Date:d}: {transaction.From} paid {transaction.To} {transaction.Amount:C} for {transaction.Narrative}");
+        }
       }
 
       Console.ReadLine();
     }
-
     private static IEnumerable<Transaction> ReadCSV(string filename)
     {
       var lines = File.ReadAllLines(filename).Skip(1);
@@ -36,6 +51,31 @@ namespace SupportBank.ConsoleApp
           Amount = decimal.Parse(fields[4])
         };
       }
+    }
+
+    private static IEnumerable<Account> CreateAccountsFromTransactions(IEnumerable<Transaction> transactions)
+    {
+      var accounts = new Dictionary<string, Account>();
+
+      foreach (var transaction in transactions)
+      {
+        GetOrCreateAccount(accounts, transaction.From).OutgoingTransactions.Add(transaction);
+        GetOrCreateAccount(accounts, transaction.To).IncomingTransactions.Add(transaction);
+      }
+
+      return accounts.Values;
+    }
+
+    private static Account GetOrCreateAccount(Dictionary<string, Account> accounts, string owner)
+    {
+      if (accounts.ContainsKey(owner))
+      {
+        return accounts[owner];
+      }
+
+      var newAccount = new Account(owner);
+      accounts[owner] = newAccount;
+      return newAccount;
     }
   }
 }
