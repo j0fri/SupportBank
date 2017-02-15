@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace SupportBank.ConsoleApp
 {
-  internal class Account
+  public class Account
   {
     public Account(string owner)
     {

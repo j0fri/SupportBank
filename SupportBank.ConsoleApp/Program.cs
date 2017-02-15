@@ -14,15 +14,7 @@ namespace SupportBank.ConsoleApp
       ConfigureNLog();
       logger.Info("SupportBank starting up");
 
-      var csvParser = new CSVParser();
-      var jsonParser = new JsonParser();
-
-      var transactions = csvParser.ReadFile(@"Transactions2014.csv")
-        .Union(csvParser.ReadFile(@"DodgyTransactions2015.csv"))
-        .Union(jsonParser.ReadFile(@"Transactions2013.json"));
-
-      var accounts = new Bank(transactions);
-      new ConsoleRunner().Run(accounts);
+      new ConsoleRunner().Run(new Bank());
     }
 
     private static void ConfigureNLog()

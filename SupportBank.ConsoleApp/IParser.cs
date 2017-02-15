@@ -2,7 +2,7 @@
 
 namespace SupportBank.ConsoleApp
 {
-  internal interface IParser
+  public interface IParser
   {
     IEnumerable<Transaction> ReadFile(string filename);
   }

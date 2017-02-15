@@ -10,11 +10,6 @@ namespace SupportBank.ConsoleApp
 
     private readonly Dictionary<string, Account> accounts = new Dictionary<string, Account>();
 
-    public Bank(IEnumerable<Transaction> initialTransactions)
-    {
-      CreateAccountsFromTransactions(initialTransactions);
-    }
-
     public Account this[string owner] => GetOrCreateAccount(owner);
 
     public IEnumerator<Account> GetEnumerator()
@@ -27,7 +22,7 @@ namespace SupportBank.ConsoleApp
       return GetEnumerator();
     }
 
-    private void CreateAccountsFromTransactions(IEnumerable<Transaction> transactions)
+    public void ImportTransactions(IEnumerable<Transaction> transactions)
     {
       foreach (var transaction in transactions)
       {

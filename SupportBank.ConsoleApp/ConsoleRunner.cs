@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SupportBank.ConsoleApp
@@ -8,7 +9,8 @@ namespace SupportBank.ConsoleApp
     private enum CommandType
     {
       ListAll,
-      ListOne
+      ListOne,
+      ImportFile
     }
 
     private struct Command
@@ -34,6 +36,10 @@ namespace SupportBank.ConsoleApp
           case CommandType.ListOne:
             ListOneAccount(accounts[command.Target]);
             break;
+
+          case CommandType.ImportFile:
+            ImportFile(accounts, command.Target);
+            break;
         }
       }
     }
@@ -46,6 +52,7 @@ namespace SupportBank.ConsoleApp
       Console.WriteLine("Available commands:");
       Console.WriteLine("  List All - list all account balances");
       Console.WriteLine("  List [Account] - list transactions for the specified account");
+      Console.WriteLine("  Import File [Filename] - import transactions from the specified file");
       Console.WriteLine();
     }
 
@@ -70,21 +77,35 @@ namespace SupportBank.ConsoleApp
 
     private bool ParseCommand(string commandText, out Command command)
     {
-      command = new Command();
-
-      if (!commandText.StartsWith("List "))
+      if (commandText.StartsWith("List "))
       {
-        return false;
+        return ParseListCommand(commandText.Substring(5), out command);
       }
 
-      if (commandText.Substring(5) == "All")
+      command = new Command();
+
+      if (commandText.StartsWith("Import File "))
+      {
+        command.Target = commandText.Substring("Import File ".Length);
+        command.Type = CommandType.ImportFile;
+        return true;
+      }
+
+      return false;
+    }
+
+    private bool ParseListCommand(string target, out Command command)
+    {
+      command = new Command();
+
+      if (target == "All")
       {
         command.Type = CommandType.ListAll;
       }
       else
       {
         command.Type = CommandType.ListOne;
-        command.Target = commandText.Substring(5);
+        command.Target = target;
       }
 
       return true;
@@ -96,7 +117,8 @@ namespace SupportBank.ConsoleApp
 
       foreach (var account in accounts)
       {
-        Console.WriteLine($"  {account.Owner} {(account.Balance < 0 ? "owes" : "is owed")} {Math.Abs(account.Balance):C}");
+        Console.WriteLine(
+          $"  {account.Owner} {(account.Balance < 0 ? "owes" : "is owed")} {Math.Abs(account.Balance):C}");
       }
 
       Console.WriteLine();
@@ -114,5 +136,36 @@ namespace SupportBank.ConsoleApp
 
       Console.WriteLine();
     }
+
+    private void ImportFile(Bank accounts, string filename)
+    {
+      var parser = ParserFactory.GetParser(filename);
+
+      if (parser == null)
+      {
+        Console.WriteLine("Sorry, I'm not sure how to import that type of file.");
+        Console.WriteLine();
+        return;
+      }
+
+      Console.WriteLine($"Importing {filename}...");
+
+      try
+      {
+        var transactions = parser.ReadFile(filename);
+        accounts.ImportTransactions(transactions);
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine("Unable to import transactions due to error - one or more transactions have not been loaded");
+        Console.WriteLine(e.Message);
+        Console.WriteLine();
+        return;
+      }
+
+      Console.WriteLine("Done");
+      Console.WriteLine();
+    }
+
   }
 }

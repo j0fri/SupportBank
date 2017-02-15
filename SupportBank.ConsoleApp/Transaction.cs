@@ -2,7 +2,7 @@
 
 namespace SupportBank.ConsoleApp
 {
-  internal class Transaction
+  public class Transaction
   {
     public DateTime Date { get; set; }
     public string FromAccount { get; set; }
