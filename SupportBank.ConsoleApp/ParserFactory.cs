@@ -16,6 +16,9 @@ namespace SupportBank.ConsoleApp
         case ".json":
           return new JsonParser();
 
+        case ".xml":
+          return new XmlParser();
+
         default:
           return null;
       }
