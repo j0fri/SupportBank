@@ -96,10 +96,7 @@ namespace SupportBank.ConsoleApp
 
       foreach (var account in accounts)
       {
-        var balance = account.IncomingTransactions.Sum(tx => tx.Amount) -
-                      account.OutgoingTransactions.Sum(tx => tx.Amount);
-
-        Console.WriteLine($"  {account.Owner} {(balance < 0 ? "owes" : "is owed")} {Math.Abs(balance):C}");
+        Console.WriteLine($"  {account.Owner} {(account.Balance < 0 ? "owes" : "is owed")} {Math.Abs(account.Balance):C}");
       }
 
       Console.WriteLine();
@@ -109,8 +106,7 @@ namespace SupportBank.ConsoleApp
     {
       Console.WriteLine($"Account {account.Owner}");
 
-      foreach (var transaction in
-        account.IncomingTransactions.Union(account.OutgoingTransactions).OrderBy(tx => tx.Date))
+      foreach (var transaction in account.AllTransactions)
       {
         Console.WriteLine(
           $"  {transaction.Date:d}: {transaction.FromAccount} paid {transaction.ToAccount} {transaction.Amount:C} for {transaction.Narrative}");
