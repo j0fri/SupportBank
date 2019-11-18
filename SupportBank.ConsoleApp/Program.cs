@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
+using log4net;
+using log4net.Core;
+
 
 namespace SupportBank.ConsoleApp
 {
   class Program
   {
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILog Logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
     private enum CommandType
     {
@@ -26,8 +26,7 @@ namespace SupportBank.ConsoleApp
 
     static void Main()
     {
-      ConfigureNLog();
-      logger.Info("SupportBank starting up");
+      Logger.Info("SupportBank starting up");
 
       var transactions = ReadCSV(@"Transactions2014.csv")
         .Union(ReadCSV(@"DodgyTransactions2015.csv"));
@@ -52,28 +51,15 @@ namespace SupportBank.ConsoleApp
       }
     }
 
-    private static void ConfigureNLog()
-    {
-      var config = new LoggingConfiguration();
-      var target = new FileTarget
-      {
-        FileName = @"SupportBank.log",
-        Layout = @"${longdate} ${level} - ${logger}: ${message}"
-      };
-      config.AddTarget("File Logger", target);
-      config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, target));
-      LogManager.Configuration = config;
-    }
-
     private static IEnumerable<Transaction> ReadCSV(string filename)
     {
-      logger.Info($"Loading transactions from file {filename}");
+      Logger.Info($"Loading transactions from file {filename}");
 
       var lines = File.ReadAllLines(filename).Skip(1);
 
       foreach (var line in lines)
       {
-        logger.Debug($"Parsing transaction: {line}");
+        Logger.Debug($"Parsing transaction: {line}");
 
         var fields = line.Split(',');
 
@@ -110,7 +96,7 @@ namespace SupportBank.ConsoleApp
 
     private static void ReportSkippedTransaction(string transaction, string reason)
     {
-      logger.Error($"Unable to process transaction because {reason}: {transaction}");
+      Logger.Error($"Unable to process transaction because {reason}: {transaction}");
       Console.Error.WriteLine($"Skipping invalid transaction: {transaction}");
     }
 
@@ -134,7 +120,7 @@ namespace SupportBank.ConsoleApp
         return accounts[owner];
       }
 
-      logger.Debug($"Adding account for {owner}");
+      Logger.Debug($"Adding account for {owner}");
       var newAccount = new Account(owner);
       accounts[owner] = newAccount;
       return newAccount;
