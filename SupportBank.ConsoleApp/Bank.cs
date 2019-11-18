@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using NLog;
+using log4net;
+using log4net.Core;
 
 namespace SupportBank.ConsoleApp
 {
   class Bank : IEnumerable<Account>
   {
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
     private readonly Dictionary<string, Account> accounts = new Dictionary<string, Account>();
 

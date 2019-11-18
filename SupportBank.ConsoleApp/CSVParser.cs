@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
+using log4net;
 
 namespace SupportBank.ConsoleApp
 {
   class CSVParser : IParser
   {
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
     public IEnumerable<Transaction> ReadFile(string filename)
     {

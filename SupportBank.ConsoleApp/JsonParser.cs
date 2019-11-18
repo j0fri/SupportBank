@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using log4net;
 using Newtonsoft.Json;
-using NLog;
 
 namespace SupportBank.ConsoleApp
 {
   class JsonParser : IParser
   {
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
     public IEnumerable<Transaction> ReadFile(string filename)
     {
