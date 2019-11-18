@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using NLog;
+using log4net;
 
 namespace SupportBank.ConsoleApp
 {
   public class XmlParser : IParser
   {
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+    private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
     public IEnumerable<Transaction> ReadFile(string filename)
     {

@@ -1,33 +1,23 @@
-﻿using System.Linq;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
 
-namespace SupportBank.ConsoleApp
-{
-  class Program
-  {
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using log4net;
+using log4net.Core;
 
-    static void Main()
-    {
-      ConfigureNLog();
-      logger.Info("SupportBank starting up");
+ namespace SupportBank.ConsoleApp
+ {
+   class Program
+   {
+     private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-      new ConsoleRunner().Run(new Bank());
-    }
+     static void Main()
+     {
+       logger.Info("SupportBank starting up");
 
-    private static void ConfigureNLog()
-    {
-      var config = new LoggingConfiguration();
-      var target = new FileTarget
-      {
-        FileName = @"SupportBank.log",
-        Layout = @"${longdate} ${level} - ${logger}: ${message}"
-      };
-      config.AddTarget("File Logger", target);
-      config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, target));
-      LogManager.Configuration = config;
-    }
-  }
-}
+       new ConsoleRunner().Run(new Bank());
+     }
+
+   }
+ }
