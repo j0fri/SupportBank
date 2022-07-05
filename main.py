@@ -1,4 +1,8 @@
 import csv
+import logging
+from datetime import datetime
+
+logging.basicConfig(filename='C:\\Users\\jorfri\\Work\\Training\\SupportBank\\SupportBank.log', filemode='w', level=logging.DEBUG)
 
 def print_balances(accounts):
     for account in accounts:
@@ -9,18 +13,25 @@ def print_account(name, account_data):
     for data in account_data:
         print(data)
 
-with open('C:\\Users\\jorfri\\Work\\Training\\SupportBank\\Transactions2014.csv', newline='\n') as csvfile:
+with open('C:\\Users\\jorfri\\Work\\Training\\SupportBank\\DodgyTransactions2015.csv', newline='\n') as csvfile:
     transactionReader = csv.reader(csvfile, delimiter=',')
 
     accounts = dict()
     next(transactionReader)
 
-    for transaction in transactionReader:
+    for line, transaction in enumerate(list(transactionReader)):
         date = transaction[0]
+        try:
+            datetime.strptime(date, "%d/%m/%Y")
+        except ValueError:
+            logging.warning(f"Line: {line+2}, {date} is not a valid date.")
         sender = transaction[1]
         receiver = transaction[2]
         narrative = transaction[3]
-        amount = float(transaction[4])
+        try:
+            amount = float(transaction[4])
+        except ValueError:
+            logging.warning(f"Line: {line+2}, {transaction[4]} is not a valid amount.")
         if not sender in accounts:
             accounts[sender] = [0,[]]
         if not receiver in accounts:
