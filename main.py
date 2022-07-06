@@ -13,7 +13,7 @@ logging.basicConfig(filename='.\\SupportBank.log', filemode='w', level=logging.D
 
 def print_balances(accounts):
     for account in accounts:
-        print(f"Name: {account}, Balance: {accounts[account][0]:.2f}")
+        print(f"Name: {account}, Balance: {accounts[account]['Balance']:.2f}")
 
 def print_account(name, account_data):
     print(f"Transactions of: {name}")
@@ -22,15 +22,15 @@ def print_account(name, account_data):
 
 def add_to_account(accounts, sender, receiver, amount, narrative, date):
     if not sender in accounts:
-        accounts[sender] = [0, []]
+        accounts[sender] = {'Balance' : 0, 'Transactions' : []}
     if not receiver in accounts:
-        accounts[receiver] = [0, []]
+        accounts[receiver] = {'Balance' : 0, 'Transactions' : []}
 
-    accounts[sender][0] -= amount
-    accounts[sender][1].append(
+    accounts[sender]['Balance'] -= amount
+    accounts[sender]['Transactions'].append(
         f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
-    accounts[receiver][0] += amount
-    accounts[receiver][1].append(
+    accounts[receiver]['Balance'] += amount
+    accounts[receiver]['Transactions'].append(
         f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
 
 def convert_amount(amount_string, line = None):
@@ -53,11 +53,12 @@ def read_csv(name):
         next(transaction_reader)
 
         for line, transaction in enumerate(list(transaction_reader)):
-            date = transaction[0]
+            date_string = transaction[0]
             try:
-                datetime.strptime(date, "%d/%m/%Y")
+                datetime.strptime(date_string, "%d/%m/%Y")
+                date = '-'.join(reversed(date_string.split('/')))
             except ValueError:
-                logging.warning(f"Line: {line+2}, {date} is not a valid date.")
+                logging.warning(f"Line: {line+2}, {date_string} is not a valid date.")
                 status = 1
                 continue
 
@@ -82,11 +83,12 @@ def read_json(filename):
         accounts = dict()
 
         for line, transaction in enumerate(data):
-            date = transaction['Date']
+            date_string = transaction['Date']
             try:
-                datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
+                datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S")
+                date = date_string[0:10]
             except ValueError:
-                logging.warning(f"Line: {line + 2}, {date} is not a valid date.")
+                logging.warning(f"Line: {line + 2}, {date_string} is not a valid date.")
                 status = 1
                 continue
 
@@ -94,7 +96,7 @@ def read_json(filename):
             receiver = transaction['ToAccount']
             narrative = transaction['Narrative']
 
-            amount, invalid = convert_amount(transaction[4], line)
+            amount, invalid = convert_amount(transaction['Amount'], line)
 
             if invalid:
                 status = 1
@@ -173,4 +175,4 @@ if __name__ == "__main__":
             if not name in accounts:
                 print("That account doesn't exist!")
             else:
-                print_account(name, accounts[name][1])
+                print_account(name, accounts[name]['Transactions'])
