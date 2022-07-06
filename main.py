@@ -2,6 +2,12 @@ import csv
 import logging
 from datetime import datetime
 import json
+import xml.etree.ElementTree as ET
+
+
+from datetime import datetime
+
+
 
 logging.basicConfig(filename='.\\SupportBank.log', filemode='w', level=logging.DEBUG)
 
@@ -13,6 +19,31 @@ def print_account(name, account_data):
     print(f"Transactions of: {name}")
     for data in account_data:
         print(data)
+
+def add_to_account(accounts, sender, receiver, amount, narrative, date):
+    if not sender in accounts:
+        accounts[sender] = [0, []]
+    if not receiver in accounts:
+        accounts[receiver] = [0, []]
+
+    accounts[sender][0] -= amount
+    accounts[sender][1].append(
+        f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
+    accounts[receiver][0] += amount
+    accounts[receiver][1].append(
+        f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
+
+def convert_amount(amount_string, line = None):
+    try:
+        amount = float(amount_string)
+    except ValueError:
+        if type(line) == int:
+            logging.warning(f"Line: {line + 2}, {amount_string} is not a valid amount.")
+        else:
+            logging.warning(f"{amount_string} is not a valid amount.")
+        return 0.0, 1
+    finally:
+        return amount, 0
 
 def read_csv(name):
     status = 0
@@ -34,22 +65,14 @@ def read_csv(name):
             receiver = transaction[2]
             narrative = transaction[3]
 
-            try:
-                amount = float(transaction[4])
-            except ValueError:
-                logging.warning(f"Line: {line+2}, {transaction[4]} is not a valid amount.")
+            amount, invalid = convert_amount(transaction[4], line)
+
+            if invalid:
                 status = 1
                 continue
 
-            if not sender in accounts:
-                accounts[sender] = [0,[]]
-            if not receiver in accounts:
-                accounts[receiver] = [0,[]]
+            add_to_account(accounts, sender, receiver, amount, narrative, date)
 
-            accounts[sender][0] -= amount
-            accounts[sender][1].append(f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
-            accounts[receiver][0] += amount
-            accounts[receiver][1].append(f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
     return accounts, status
 
 def read_json(filename):
@@ -71,31 +94,61 @@ def read_json(filename):
             receiver = transaction['ToAccount']
             narrative = transaction['Narrative']
 
-            try:
-                amount = float(transaction['Amount'])
-            except ValueError:
-                logging.warning(f"Line: {line + 2}, {transaction['Amount']} is not a valid amount.")
+            amount, invalid = convert_amount(transaction[4], line)
+
+            if invalid:
                 status = 1
                 continue
 
-            if not sender in accounts:
-                accounts[sender] = [0, []]
-            if not receiver in accounts:
-                accounts[receiver] = [0, []]
-
-            accounts[sender][0] -= amount
-            accounts[sender][1].append(f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
-            accounts[receiver][0] += amount
-            accounts[receiver][1].append(f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
+            add_to_account(accounts, sender, receiver, amount, narrative, date)
 
     return accounts, status
+
+def read_xml(filename):
+    data_tree = ET.parse(filename)
+    root = data_tree.getroot()
+    accounts = dict()
+    status = 0
+    for transaction_object in root:
+        serial_date_string = transaction_object.attrib['Date']
+
+        if serial_date_string.isdigit() and len(serial_date_string) == 5:
+            serial_date = int(serial_date_string)
+        else:
+            logging.warning(f"{date} is not a valid date.")
+            status = 1
+            continue
+
+        date_long = str(datetime.fromordinal(datetime(1900, 1, 1).toordinal() + serial_date - 2))
+        date = date_long[0:10]
+        narrative = transaction_object[0].text
+        amount_string = transaction_object[1].text
+        sender = transaction_object[2][0].text
+        receiver = transaction_object[2][1].text
+
+        amount, invalid = convert_amount(amount_string)
+
+        if invalid:
+            status = 1
+            continue
+
+        add_to_account(accounts, sender, receiver, amount, narrative, date)
+
+    return accounts, status
+
+
+
 
 def read_file(filename):
     extension = filename.split('.')[1]
     if extension == "csv":
         accounts, status = read_csv(filename)
-    else:
+    elif extension == "json":
         accounts, status = read_json(filename)
+    elif extension == "xml":
+        accounts, status = read_xml(filename)
+    else:
+        print("Invalid file extension.")
 
     return accounts, status
 
