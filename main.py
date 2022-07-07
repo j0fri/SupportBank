@@ -162,6 +162,16 @@ def read_file(filename):
 
     return accounts, status
 
+def write_file(filename, accounts):
+    transaction_set = set()
+    for account in accounts:
+        transaction_set = transaction_set.union(set(accounts[account].transactions))
+    with open(filename, "w") as text_file:
+        transaction_list = list(transaction_set)
+        transaction_list.sort(key=lambda transaction: datetime.strptime(transaction.date, "%Y-%m-%d"))
+        text_file.writelines([transaction.__str__() + '\n' for transaction in transaction_list])
+
+
 if __name__ == "__main__":
     filename = input("Enter the filename of the file you want to read from: ")
     accounts, status = read_file(filename)
@@ -190,5 +200,8 @@ if __name__ == "__main__":
                 print("That account doesn't exist!")
             else:
                 print_account(name, accounts[name].transactions)
+        elif command_strings[0] + ' ' + command_strings[1] == "Export File":
+            filename = command_strings[2]
+            write_file(filename, accounts)
         else:
             print("Invalid command.")
