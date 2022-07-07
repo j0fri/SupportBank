@@ -1,19 +1,31 @@
 import csv
 import logging
-from datetime import datetime
 import json
 import xml.etree.ElementTree as ET
-
-
 from datetime import datetime
-
-
 
 logging.basicConfig(filename='.\\SupportBank.log', filemode='w', level=logging.DEBUG)
 
+class Transaction:
+    def __init__(self, date, narrative, sender, receiver, amount):
+        self.date = date
+        self.narrative = narrative
+        self.sender = sender
+        self.receiver = receiver
+        self.amount = amount
+    def __str__(self):
+        return f"Date: {self.date}, Narrative: {self.narrative}, Sender: {self.sender}, Receiver: {self.receiver}, " \
+               f"Amount: {self.amount:.2f}"
+
+class Account:
+    def __init__(self, name, balance = 0, transactions = None):
+        self.name = name
+        self.balance = balance
+        self.transactions = transactions if transactions else []
+
 def print_balances(accounts):
     for account in accounts:
-        print(f"Name: {account}, Balance: {accounts[account]['Balance']:.2f}")
+        print(f"Name: {account}, Balance: {accounts[account].balance:.2f}")
 
 def print_account(name, account_data):
     print(f"Transactions of: {name}")
@@ -22,16 +34,15 @@ def print_account(name, account_data):
 
 def add_to_account(accounts, sender, receiver, amount, narrative, date):
     if not sender in accounts:
-        accounts[sender] = {'Balance' : 0, 'Transactions' : []}
+        accounts[sender] = Account(sender)
     if not receiver in accounts:
-        accounts[receiver] = {'Balance' : 0, 'Transactions' : []}
+        accounts[receiver] = Account(receiver)
 
-    accounts[sender]['Balance'] -= amount
-    accounts[sender]['Transactions'].append(
-        f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
-    accounts[receiver]['Balance'] += amount
-    accounts[receiver]['Transactions'].append(
-        f"Date: {date}, Narrative: {narrative}, Sender: {sender}, Receiver: {receiver}, Amount: {amount:.2f}")
+    transaction = Transaction(date, narrative, sender, receiver, amount)
+    accounts[sender].balance -= amount
+    accounts[sender].transactions.append(transaction)
+    accounts[receiver].balance += amount
+    accounts[receiver].transactions.append(transaction)
 
 def convert_amount(amount_string, line = None):
     try:
@@ -138,9 +149,6 @@ def read_xml(filename):
 
     return accounts, status
 
-
-
-
 def read_file(filename):
     extension = filename.split('.')[1]
     if extension == "csv":
@@ -165,14 +173,22 @@ if __name__ == "__main__":
         if command == "List All":
             print_balances(accounts)
             continue
+
+
+
         command_strings = command.split(' ')
+
+        if len(command_strings) <= 1:
+            print("Invalid command.")
+            continue
 
         if command_strings[0] + ' ' + command_strings[1] == "Import File":
             accounts, status = read_file(command_strings[2])
-
-        if command_strings[0] == "List":
+        elif command_strings[0] == "List":
             name = ' '.join(command_strings[1:])
             if not name in accounts:
                 print("That account doesn't exist!")
             else:
-                print_account(name, accounts[name]['Transactions'])
+                print_account(name, accounts[name].transactions)
+        else:
+            print("Invalid command.")
